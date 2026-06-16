@@ -73,6 +73,14 @@ Compare a reference text (e.g. Pliny) to observed Voynich text using Naibbe encr
 voynich-analysis simulate --voynich path/to/voynich.txt --reference path/to/pliny.txt --seeds 100
 ```
 
+#### 3. Launching the Interactive Red-Teaming Dashboard
+
+Start a local web server to view the interactive Red-Teaming & Falsification Panel in your web browser:
+
+```bash
+voynich-analysis dashboard
+```
+
 ---
 
 ## API Usage

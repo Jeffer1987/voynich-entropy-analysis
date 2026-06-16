@@ -27,15 +27,66 @@ def main() -> None:
     sim_parser.add_argument("--seeds", type=int, default=100, help="Number of simulation seeds to run")
     sim_parser.add_argument("--ambiguous", action="store_true", default=False, help="Allow ambiguous bigram/unigram clashing")
     
+    # Dashboard command
+    subparsers.add_parser("dashboard", help="Start interactive local web server for the Red-Teaming Panel")
+    
     args = parser.parse_args()
     
     if args.command == "entropy":
         run_entropy(args)
     elif args.command == "simulate":
         run_simulate(args)
+    elif args.command == "dashboard":
+        run_dashboard(args)
     else:
         parser.print_help()
         sys.exit(1)
+
+def run_dashboard(args: argparse.Namespace) -> None:
+    import http.server
+    import socketserver
+    import webbrowser
+    import threading
+    import time
+
+    package_dir = os.path.dirname(os.path.abspath(__file__))
+    template_path = os.path.join(package_dir, "templates", "dashboard.html")
+
+    if not os.path.exists(template_path):
+        print(f"Error: Dashboard template not found at {template_path}")
+        sys.exit(1)
+
+    port = 8000
+    
+    class DashboardHandler(http.server.SimpleHTTPRequestHandler):
+        def do_GET(self):
+            if self.path == "/" or self.path == "/index.html":
+                self.send_response(200)
+                self.send_header("Content-type", "text/html")
+                self.end_headers()
+                with open(template_path, "rb") as f:
+                    self.wfile.write(f.read())
+            else:
+                self.send_error(404, "File not found")
+
+    print(f"Starting Red-Teaming Dashboard server on http://localhost:{port}...")
+    print("Press Ctrl+C to stop the server.")
+    
+    def open_browser():
+        time.sleep(1.0)
+        webbrowser.open(f"http://localhost:{port}")
+
+    threading.Thread(target=open_browser, daemon=True).start()
+
+    socketserver.TCPServer.allow_reuse_address = True
+    try:
+        with socketserver.TCPServer(("", port), DashboardHandler) as httpd:
+            httpd.serve_forever()
+    except KeyboardInterrupt:
+        print("\nStopping dashboard server.")
+    except Exception as e:
+        print(f"Error starting server: {e}")
+
 
 def run_entropy(args: argparse.Namespace) -> None:
     if not os.path.exists(args.file):

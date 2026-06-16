@@ -28,3 +28,6 @@ voynich-analysis = "voynich_analysis.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+voynich_analysis = ["templates/*.html"]
